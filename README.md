@@ -1,79 +1,69 @@
-# KeyForge — Katalog Keyboard Mekanik & Switch (PWA)
+# WastraKu — Katalog Batik Nusantara & Filosofi Motif (PWA)
 
 Tugas Akhir Praktikum PPB 2026. Platform: **PWA (React + Vite)**. API: **Node.js + Express + Supabase** (sesuai Modul 1).
 
 Isi project:
-- `keyforge-api/` → "dapur": server API + database
-- `keyforge-app/` → "ruang tamu": aplikasi yang dilihat pengguna
+- `wastraku-api/` → server REST API + database (Express + Supabase)
+- `wastraku-app/` → aplikasi PWA yang dilihat pengguna (React + Vite)
 
 ## Memenuhi aturan TA
-| Aturan | Di KeyForge |
+| Aturan | Di WastraKu |
 |---|---|
-| API buatan sendiri (Modul 1) | `keyforge-api` (Express + Supabase) |
+| API buatan sendiri (Modul 1) | `wastraku-api` (Express + Supabase) |
 | Bottom Navigation Bar | `src/components/BottomNav.jsx` |
-| Minimal 5 halaman | 6: Beranda, Daftar Keyboard, Detail Keyboard, Daftar Switch, Detail Switch, Profil |
-| 2 halaman list + detail | Keyboard → detail, Switch → detail |
-| Halaman Profile/About | `src/pages/About.jsx` |
-| GitHub | Panduan langkah 6 |
-| PWA wajib hosting gratis | Vercel, langkah 7 |
+| Minimal 5 halaman | 6: Beranda, Motif Batik, Detail Motif, 38 Provinsi, Detail Provinsi, Profil |
+| 2 halaman list + detail | Motif → Detail Motif, Provinsi → Detail Provinsi |
+| Halaman Profile/About | `src/pages/About.jsx` (profil pembuat + CRUD motif) |
+| GitHub | Repository ini |
+| PWA wajib hosting gratis | Vercel |
 
----
+## Endpoint API
+| Method | URL | Fungsi |
+|---|---|---|
+| GET | `/api/motifs` | Daftar motif |
+| GET | `/api/motifs/:id` | Detail motif |
+| POST | `/api/motifs` | Tambah motif |
+| PUT | `/api/motifs/:id` | Ubah motif |
+| DELETE | `/api/motifs/:id` | Hapus motif |
+| GET | `/api/regions` | Daftar 38 provinsi |
+| GET | `/api/regions/:id` | Detail provinsi |
 
-## LANGKAH 1 — Siapkan alat (sekali saja)
-Pasang **Node.js** (nodejs.org, pilih LTS), **VS Code**, dan **Git**. Alat ini sudah dipakai di praktikum.
+## Menjalankan di komputer sendiri
 
-## LANGKAH 2 — Buat "gudang data" di Supabase
-1. Buka https://supabase.com, masuk, klik **New project** (nama bebas, mis. `keyforge`).
-2. Menu kiri **SQL Editor** → **New query**.
-3. Buka file `keyforge-api/database.sql`, salin SEMUA isinya, tempel, klik **RUN**.
-4. Cek **Table Editor**: harus ada tabel `switches` (8 baris) dan `keyboards` (8 baris).
-5. **Project Settings → Data API** → salin **Project URL**. Di **API Keys** salin **anon public key**.
+### 1. Database (Supabase)
+1. Buat project di https://supabase.com.
+2. Buka **SQL Editor → New query**, salin seluruh isi `wastraku-api/database.sql`, lalu klik **RUN**.
+3. Cek **Table Editor**: harus ada tabel `regions` (38 baris) dan `motifs`.
+4. Salin **Project URL** dan **anon public key** dari pengaturan project.
 
-## LANGKAH 3 — Jalankan API
-Buka terminal di folder `keyforge-api`:
+### 2. API
+Di folder `wastraku-api`:
 ```bash
-copy .env.example .env      # (Mac/Linux: cp .env.example .env)
+copy .env.example .env      # Mac/Linux: cp .env.example .env
 ```
-Buka file `.env`, isi `SUPABASE_URL` dan `SUPABASE_KEY` dengan hasil langkah 2.5. Lalu:
+Isi `SUPABASE_URL` dan `SUPABASE_KEY` di file `.env`, lalu:
 ```bash
 npm install
 npm run dev
 ```
-Jika muncul `Server running on port 3000`, berhasil. Coba buka di browser: http://localhost:3000/api/keyboards (harus muncul data). Biarkan terminal ini tetap menyala.
+Jika muncul `Server running on port 3000`, buka http://localhost:3000/api/motifs.
 
-**Tes dengan Postman** (seperti Modul 1): GET `http://localhost:3000/api/keyboards`, POST dengan body JSON, dst.
-
-## LANGKAH 4 — Jalankan aplikasi
-Buka terminal BARU di folder `keyforge-app`:
+### 3. Aplikasi
+Di folder `wastraku-app` (terminal baru):
 ```bash
 copy .env.example .env
 npm install
-npm run icons
 npm run dev
 ```
-Buka alamat yang muncul (biasanya http://localhost:5173). Selesai, aplikasinya sudah jalan.
+Buka alamat yang muncul (biasanya http://localhost:5173).
 
-## LANGKAH 5 — Ganti data diri
-Buka `keyforge-app/src/pages/About.jsx`, ganti nama, NIM, kelas, dan link GitHub.
+## Deploy ke Vercel (gratis)
+1. **Deploy API dulu**: New Project → pilih repo ini → **Root Directory: `wastraku-api`** → isi Environment Variables `SUPABASE_URL` dan `SUPABASE_KEY` → Deploy. Salin alamat hasilnya.
+2. **Deploy aplikasi**: New Project → repo yang sama → **Root Directory: `wastraku-app`** → Framework **Vite** → Environment Variable `VITE_API_URL` = alamat API tadi (tanpa garis miring di akhir) → Deploy.
+3. Buka alamat aplikasi di HP, lalu pilih "Tambahkan ke layar utama" untuk memasangnya sebagai PWA.
 
-## LANGKAH 6 — Unggah ke GitHub
-Buat satu repository di github.com (mis. `keyforge`), lalu di folder induk (`keyforge`):
-```bash
-git init
-git add .
-git commit -m "KeyForge TA PPB"
-git branch -M main
-git remote add origin https://github.com/USERNAME/keyforge.git
-git push -u origin main
-```
-Ganti `USERNAME` dengan username GitHub kamu. File `.env` tidak ikut terunggah (sudah diatur).
-
-## LANGKAH 7 — Deploy ke Vercel (gratis)
-1. Daftar di https://vercel.com dengan akun GitHub.
-2. **Deploy API dulu**: New Project → pilih repo `keyforge` → **Root Directory: `keyforge-api`** → buka **Environment Variables**, isi `SUPABASE_URL` dan `SUPABASE_KEY` → Deploy. Salin alamat hasilnya (mis. `https://keyforge-api.vercel.app`).
-3. **Deploy aplikasi**: New Project → repo yang sama → **Root Directory: `keyforge-app`** → Framework **Vite** → Environment Variable `VITE_API_URL` = alamat API tadi (tanpa garis miring di akhir) → Deploy.
-4. Buka alamat aplikasi di HP, lalu pilih "Tambahkan ke layar utama" untuk memasangnya (PWA).
-
-## Nilai tambah & asistensi
-- Wajib asistensi minimal 1 kali ke asisten dan isi lembar asistensi.
-- Responsi 25–28 November. Pelajari alur: Supabase → API (model, controller, routes) → `api.js` → halaman.
+## Fitur utama
+- 38 provinsi dengan motif batik khas, filosofi, sejarah, simbolisme, dan penggunaan adat.
+- Pencarian dan filter (kategori, provinsi, pulau).
+- CRUD motif batik di halaman Profil.
+- PWA: bisa dipasang, dengan cache gambar (Workbox) dan query cache untuk data API.

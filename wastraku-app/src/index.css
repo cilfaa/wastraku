@@ -1,0 +1,87 @@
+/* ============================================================
+   index.css — gaya dasar seluruh aplikasi
+   Berisi: variabel warna & font (design tokens), reset dasar,
+   gaya judul, tautan, fokus keyboard, dan pengurangan animasi.
+   ============================================================ */
+
+/* :root = tempat menyimpan "variabel" yang dipakai di seluruh CSS.
+   Cukup ubah di sini, warna/font di semua halaman ikut berubah. */
+:root {
+  --bg: #ffffff;
+  --surface: #faf8f5;
+  --card: #ffffff;
+  --line: #e7e2da;
+  --text: #1c1917;
+  --muted: #57534e;
+  --accent: #1e3a5f;
+  --sogan: #8c4a27;
+  --accent-soft: #eef3f8;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+  font: 16px/1.65 var(--font-sans);
+  color: var(--text);
+  background: var(--bg);
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+h1, h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.28rem;
+  margin: 1.6rem 0 0.65rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.35;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
