@@ -3,7 +3,7 @@
 // Menentukan: URL apa menampilkan halaman apa, plus menu navigasi.
 // ============================================================
 import { useEffect } from 'react'
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import BottomNav from './components/BottomNav.jsx'
 import Home from './pages/Home.jsx'
 import Motifs from './pages/Motifs.jsx'
@@ -44,26 +44,12 @@ export default function App() {
     <div className="shell">
       <ScrollToTop />
 
-      {/* Menu atas: hanya muncul di layar besar (laptop) */}
+      {/* Header atas: hanya menampilkan merek WastraKu (navigasi ada di bubble bawah) */}
       <header className="top-bar">
         <Link to="/" className="top-brand">
           Wastra<span>Ku</span>
         </Link>
-        <nav className="top-links" aria-label="Navigasi desktop">
-          {/* NavLink otomatis memberi class "active" pada menu yang sedang dibuka */}
-          <NavLink to="/" end className={({ isActive }) => 'top-link' + (isActive ? ' active' : '')}>
-            Beranda
-          </NavLink>
-          <NavLink to="/motifs" className={({ isActive }) => 'top-link' + (isActive ? ' active' : '')}>
-            Motif Batik
-          </NavLink>
-          <NavLink to="/regions" className={({ isActive }) => 'top-link' + (isActive ? ' active' : '')}>
-            38 Provinsi
-          </NavLink>
-          <NavLink to="/about" className={({ isActive }) => 'top-link' + (isActive ? ' active' : '')}>
-            Profil
-          </NavLink>
-        </nav>
+        <span className="top-subtitle">Ensiklopedia Batik Nusantara</span>
       </header>
 
       {/* Isi halaman berganti sesuai URL */}
