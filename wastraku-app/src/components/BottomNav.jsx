@@ -3,13 +3,14 @@
 // (syarat TA: Bottom Navigation Bar)
 // ============================================================
 import { NavLink } from 'react-router-dom'
-import { IconHome, IconMotif, IconRegion, IconUser } from './Icons.jsx'
+import { IconBookmark, IconHome, IconMotif, IconRegion, IconUser } from './Icons.jsx'
 
-// Daftar menu: alamat tujuan, tulisan, dan ikonnya
+// Daftar 5 menu utama: alamat tujuan, tulisan, dan ikonnya
 const ITEMS = [
   { to: '/', label: 'Beranda', Icon: IconHome, end: true },
   { to: '/motifs', label: 'Motif', Icon: IconMotif },
-  { to: '/regions', label: 'Daerah', Icon: IconRegion },
+  { to: '/saved', label: 'Disimpan', Icon: IconBookmark },
+  { to: '/regions', label: 'Provinsi', Icon: IconRegion },
   { to: '/about', label: 'Profil', Icon: IconUser },
 ]
 

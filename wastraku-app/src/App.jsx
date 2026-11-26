@@ -10,6 +10,7 @@ import Motifs from './pages/Motifs.jsx'
 import MotifDetail from './pages/MotifDetail.jsx'
 import Regions from './pages/Regions.jsx'
 import RegionDetail from './pages/RegionDetail.jsx'
+import Saved from './pages/Saved.jsx'
 import About from './pages/About.jsx'
 import './App.css'
 
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/motifs" element={<Motifs />} />
           <Route path="/motifs/:id" element={<MotifDetail />} />   {/* :id = nomor motif */}
+          <Route path="/saved" element={<Saved />} />
           <Route path="/regions" element={<Regions />} />
           <Route path="/regions/:id" element={<RegionDetail />} /> {/* :id = nomor provinsi */}
           <Route path="/about" element={<About />} />

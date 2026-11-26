@@ -6,7 +6,9 @@
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import useFetch from '../useFetch.js'
+import useSavedMotifs from '../useSavedMotifs.js'
 import { getMotif, getMotifs } from '../api.js'
+import { IconBookmark } from '../components/Icons.jsx'
 import MotifCard from '../components/MotifCard.jsx'
 import ShareButton from '../components/ShareButton.jsx'
 import State from '../components/State.jsx'
@@ -20,6 +22,8 @@ export default function MotifDetail() {
   const { data: motif, loading, error, retry } = useFetch((opts) => getMotif(id, opts), `/api/motifs/${id}`)
   // Ambil semua motif (untuk mencari motif lain dari provinsi yang sama)
   const allMotifs = useFetch(getMotifs, '/api/motifs')
+  const { isSaved, toggleSave } = useSavedMotifs()
+  const saved = motif ? isSaved(motif.id) : false
 
   // Judul tab browser = nama motif
   useEffect(() => {
@@ -46,7 +50,20 @@ export default function MotifDetail() {
         <button type="button" className="back" onClick={handleBack}>
           ← Kembali
         </button>
-        {motif && <ShareButton title={`${motif.name} · WastraKu`} text={motif.philosophy} />}
+        {motif && (
+          <div className="detail-action-group">
+            <button
+              type="button"
+              className={'share-btn' + (saved ? ' saved' : '')}
+              onClick={() => toggleSave(motif.id)}
+              aria-pressed={saved}
+            >
+              <IconBookmark filled={saved} />
+              <span>{saved ? 'Disimpan' : 'Simpan'}</span>
+            </button>
+            <ShareButton title={`${motif.name} · WastraKu`} text={motif.philosophy} />
+          </div>
+        )}
       </div>
 
       {/* Loading / error */}

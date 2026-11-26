@@ -179,6 +179,20 @@ export default function About() {
         </dl>
       </section>
 
+      {/* ---------- Penjelasan aplikasi ---------- */}
+      <section className="panel">
+        <h2>Tentang WastraKu</h2>
+        <p>
+          <strong>WastraKu</strong> adalah ensiklopedia digital Batik Nusantara berbasis Progressive Web App (PWA) yang
+          menghimpun motif batik autentik dari 38 provinsi di Indonesia, lengkap dengan makna filosofis, sejarah budaya,
+          simbolisme, dan penggunaan adatnya.
+        </p>
+        <p className="muted" style={{ marginTop: 10 }}>
+          Aplikasi ini terhubung ke REST API (Node.js + Express + Supabase) dan dilengkapi fitur simpan motif favorit
+          serta pengelolaan data motif (CRUD).
+        </p>
+      </section>
+
       {/* ---------- Form tambah / edit motif ---------- */}
       <section className="panel">
         <h2>{editingId ? 'Edit Motif Batik' : 'Tambah Motif Batik (CRUD)'}</h2>
