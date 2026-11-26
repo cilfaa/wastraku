@@ -51,11 +51,12 @@ export default defineConfig({
             },
           },
           {
-            // QUERY CACHE: jawaban API (/api/motifs, /api/regions) disimpan sementara
+            // QUERY CACHE: utamakan data terbaru dari server; jika offline/lambat pakai cache
             urlPattern: /\/api\/(motifs|regions).*/i,
-            handler: 'StaleWhileRevalidate', // tampilkan yang tersimpan dulu, sambil diam-diam ambil yang terbaru
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'wastraku-api-query-cache',
+              networkTimeoutSeconds: 4,
               expiration: {
                 maxEntries: 60,
                 maxAgeSeconds: 60 * 60 * 24, // disimpan 24 jam

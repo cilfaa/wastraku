@@ -16,8 +16,8 @@ export function createResourceController(model, notFoundMessage) {
     async getAll(_req, res) {
       try {
         const data = await model.getAll()
-        // Cache-Control: browser/CDN boleh menyimpan jawaban ini 5 menit agar lebih cepat
-        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+        // no-cache: pastikan perubahan CRUD (tambah/edit/hapus) langsung terlihat
+        res.set('Cache-Control', 'no-cache')
         res.json(data)
       } catch (err) {
         // 500 = server/database bermasalah
@@ -36,7 +36,7 @@ export function createResourceController(model, notFoundMessage) {
       try {
         const data = await model.getById(id)
         if (!data) return res.status(404).json({ error: notFoundMessage })
-        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+        res.set('Cache-Control', 'no-cache')
         res.json(data)
       } catch (err) {
         res.status(500).json({ error: err.message })
