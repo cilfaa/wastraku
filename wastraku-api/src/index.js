@@ -15,8 +15,8 @@ const app = express();
 
 // cors: mengizinkan website frontend (domain lain) memanggil API ini
 app.use(cors());
-// express.json: supaya server bisa membaca data JSON yang dikirim (untuk POST/PUT)
-app.use(express.json());
+// express.json: supaya server bisa membaca data JSON (limit 2mb untuk foto base64)
+app.use(express.json({ limit: "2mb" }));
 
 // Halaman cek: buka alamat utama untuk memastikan API hidup
 app.get("/", (req, res) => {

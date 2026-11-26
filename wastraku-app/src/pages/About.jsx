@@ -1,10 +1,10 @@
 // ============================================================
-// About.jsx — halaman Profil + CRUD motif batik
-// - Bagian atas: profil pembuat
-// - Bagian tengah: form Tambah / Edit motif (Create & Update)
-// - Bagian bawah: daftar motif dengan tombol Edit & Hapus (Read & Delete)
+// About.jsx — halaman Profil + Penjelasan App + CRUD motif batik
+// - Bagian atas: profil pembuat & penjelasan WastraKu
+// - Bagian tengah: form Tambah / Edit motif (dengan unggah gambar langsung)
+// - Bagian bawah: daftar motif dengan filter provinsi/pencarian + Edit/Hapus
 // ============================================================
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useFetch from '../useFetch.js'
 import { createMotif, deleteMotif, getMotifs, getRegions, updateMotif } from '../api.js'
 import SearchInput from '../components/SearchInput.jsx'
@@ -31,17 +31,47 @@ const EMPTY_FORM = {
   image_url: '',
 }
 
+// Memperkecil & mengubah file gambar menjadi teks Data URL (base64)
+// agar langsung bisa disimpan ke database dan ditampilkan tanpa link luar.
+function compressImageToDataUrl(file, maxWidth = 800, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Gagal membaca file gambar.'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('File bukan gambar yang valid.'))
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width)
+        const width = Math.round(img.width * scale)
+        const height = Math.round(img.height * scale)
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function About() {
   // Ambil daftar motif dan provinsi dari API
   const motifsRes = useFetch(getMotifs, '/api/motifs')
   const regionsRes = useFetch(getRegions, '/api/regions')
+  const fileInputRef = useRef(null)
 
-  // State = data yang berubah-ubah di layar
-  const [form, setForm] = useState(EMPTY_FORM)         // isi form saat ini
-  const [editingId, setEditingId] = useState(null)     // id motif yang sedang diedit (null = mode tambah)
-  const [filterText, setFilterText] = useState('')     // kata kunci pencarian di daftar
-  const [submitting, setSubmitting] = useState(false)  // true saat sedang mengirim ke server
-  const [feedback, setFeedback] = useState({ type: '', text: '' }) // pesan sukses / error
+  // State form & filter daftar CRUD
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [editingId, setEditingId] = useState(null)
+  const [filterText, setFilterText] = useState('')
+  const [filterProvince, setFilterProvince] = useState('Semua')
+  const [showAll, setShowAll] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState({ type: '', text: '' })
 
   useEffect(() => {
     document.title = 'Profil & Kelola Data · WastraKu'
@@ -50,8 +80,13 @@ export default function About() {
   const regions = regionsRes.data || []
   const motifs = motifsRes.data || []
 
-  // Menyaring daftar motif sesuai kata kunci pencarian
+  const provinceOptions = Array.from(
+    new Set(regions.map((r) => r.province).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b))
+
+  // Menyaring daftar motif sesuai provinsi & kata kunci pencarian
   const filteredMotifs = motifs.filter((m) => {
+    if (filterProvince !== 'Semua' && m.regions?.province !== filterProvince) return false
     const q = filterText.trim().toLowerCase()
     if (!q) return true
     return [m.name, m.category, m.regions?.province, m.regions?.name]
@@ -61,22 +96,44 @@ export default function About() {
       .includes(q)
   })
 
-  // Dipanggil setiap pengguna mengetik di kolom form: simpan ke state `form`
+  // Supaya daftar CRUD tidak memanjang ke bawah, tampilkan 5 dulu saat belum difilter
+  const isFiltered = filterProvince !== 'Semua' || filterText.trim() !== ''
+  const visibleMotifs = isFiltered || showAll ? filteredMotifs : filteredMotifs.slice(0, 5)
+
+  // Dipanggil setiap pengguna mengetik di kolom form
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Dipanggil saat pengguna memilih gambar langsung dari galeri/komputer
+  const handleImageFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const dataUrl = await compressImageToDataUrl(file)
+      setForm((prev) => ({ ...prev, image_url: dataUrl }))
+      setFeedback({ type: '', text: '' })
+    } catch (err) {
+      setFeedback({ type: 'error', text: err.message })
+    }
+  }
+
+  const clearImage = () => {
+    setForm((prev) => ({ ...prev, image_url: '' }))
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   // Kosongkan form dan kembali ke mode "tambah"
   const resetForm = () => {
     setForm(EMPTY_FORM)
     setEditingId(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   // Dipanggil saat tombol Simpan/Tambah ditekan
   const handleSubmit = async (e) => {
-    e.preventDefault() // cegah halaman reload bawaan form
-    // Validasi: tiga kolom ini wajib diisi
+    e.preventDefault()
     if (!form.name.trim() || !form.philosophy.trim() || !form.description.trim()) {
       setFeedback({ type: 'error', text: 'Nama motif, filosofi, dan deskripsi wajib diisi.' })
       return
@@ -85,7 +142,6 @@ export default function About() {
     setSubmitting(true)
     setFeedback({ type: '', text: '' })
 
-    // Data yang akan dikirim ke API (spasi di awal/akhir dibuang dengan trim)
     const payload = {
       name: form.name.trim(),
       region_id: form.region_id || null,
@@ -98,16 +154,14 @@ export default function About() {
 
     try {
       if (editingId) {
-        // Mode edit -> UPDATE
         await updateMotif(editingId, payload)
         setFeedback({ type: 'ok', text: `Motif "${payload.name}" berhasil diperbarui.` })
       } else {
-        // Mode tambah -> CREATE
         await createMotif(payload)
         setFeedback({ type: 'ok', text: `Motif "${payload.name}" berhasil ditambahkan.` })
       }
       resetForm()
-      motifsRes.retry() // ambil ulang daftar supaya perubahan langsung terlihat
+      motifsRes.retry()
     } catch (err) {
       setFeedback({ type: 'error', text: err.message })
     } finally {
@@ -127,8 +181,9 @@ export default function About() {
       description: motif.description || '',
       image_url: motif.image_url || '',
     })
+    if (fileInputRef.current) fileInputRef.current.value = ''
     setFeedback({ type: '', text: '' })
-    window.scrollTo({ top: 0, behavior: 'smooth' }) // gulir ke atas agar form terlihat
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Tombol Hapus: minta konfirmasi dulu, lalu DELETE
@@ -153,7 +208,6 @@ export default function About() {
       <section className="panel">
         <h2>Pembuat</h2>
         <div className="profile-head">
-          {/* Avatar: huruf pertama nama */}
           <div className="profile-avatar" aria-hidden="true">
             {PROFILE.nama.charAt(0)}
           </div>
@@ -185,8 +239,8 @@ export default function About() {
         <h2>Tentang WastraKu</h2>
         <p>
           <strong>WastraKu</strong> adalah ensiklopedia digital Batik Nusantara berbasis Progressive Web App (PWA) yang
-          menghimpun motif batik autentik dari seluruh provinsi di Indonesia, lengkap dengan makna filosofis, sejarah budaya,
-          simbolisme, dan penggunaan adatnya.
+          menghimpun motif batik autentik dari seluruh provinsi di Indonesia, lengkap dengan makna filosofis, sejarah
+          budaya, simbolisme, dan penggunaan adatnya.
         </p>
         <p className="muted" style={{ marginTop: 10 }}>
           Aplikasi ini terhubung ke REST API (Node.js + Express + Supabase) dan dilengkapi fitur simpan motif favorit
@@ -210,7 +264,6 @@ export default function About() {
               />
             </label>
 
-            {/* Dropdown provinsi: pilihannya diambil dari data API */}
             <label className="crud-field">
               <span>Provinsi Asal</span>
               <select name="region_id" value={form.region_id} onChange={handleChange}>
@@ -269,18 +322,28 @@ export default function About() {
             />
           </label>
 
-          <label className="crud-field">
-            <span>URL Gambar Batik (Opsional)</span>
-            <input
-              name="image_url"
-              type="url"
-              value={form.image_url}
-              onChange={handleChange}
-              placeholder="https://commons.wikimedia.org/..."
-            />
-          </label>
+          {/* Unggah foto batik langsung dari perangkat */}
+          <div className="crud-field">
+            <span>Foto Kain Batik (Opsional)</span>
+            <div className="crud-upload-box">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageFile}
+                aria-label="Pilih foto kain batik"
+              />
+              {form.image_url && (
+                <div className="crud-preview-wrap">
+                  <img src={form.image_url} alt="Pratinjau foto batik" className="crud-preview" />
+                  <button type="button" className="chip crud-del" onClick={clearImage}>
+                    Hapus Foto
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Pesan sukses (hijau) atau error (merah) */}
           {feedback.text && (
             <p className={feedback.type === 'error' ? 'crud-msg error' : 'crud-msg ok'} role="status">
               {feedback.text}
@@ -291,7 +354,6 @@ export default function About() {
             <button type="submit" className="btn crud-submit" disabled={submitting}>
               {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Tambah Motif'}
             </button>
-            {/* Tombol Batal hanya muncul saat mode edit */}
             {editingId && (
               <button type="button" className="share-btn" onClick={resetForm}>
                 Batal Edit
@@ -301,23 +363,39 @@ export default function About() {
         </form>
       </section>
 
-      {/* ---------- Daftar motif (Read) dengan Edit & Hapus ---------- */}
+      {/* ---------- Daftar motif (Read) ringkas dengan filter ---------- */}
       <section className="panel">
         <div className="list-head" style={{ marginTop: 0 }}>
-          <h2>Daftar Data Motif ({motifs.length})</h2>
+          <h2>Kelola Data Motif ({filteredMotifs.length})</h2>
         </div>
-        <SearchInput
-          placeholder="Cari motif untuk diedit atau dihapus..."
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-          style={{ marginTop: 10 }}
-        />
+
+        <div className="filter-bar">
+          <SearchInput
+            placeholder="Cari motif untuk diedit atau dihapus..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+          />
+
+          <select
+            className="province-select"
+            value={filterProvince}
+            onChange={(e) => setFilterProvince(e.target.value)}
+            aria-label="Filter daftar motif berdasarkan provinsi"
+          >
+            <option value="Semua">Semua Provinsi</option>
+            {provinceOptions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {motifsRes.loading && <p className="muted" style={{ marginTop: 12 }}>Memuat daftar motif...</p>}
         {motifsRes.error && <p className="crud-msg error">{motifsRes.error}</p>}
 
         <ul className="crud-list">
-          {filteredMotifs.map((m) => (
+          {visibleMotifs.map((m) => (
             <li key={m.id} className="crud-item">
               <div className="crud-item-info">
                 <strong>{m.name}</strong>
@@ -336,6 +414,16 @@ export default function About() {
             </li>
           ))}
         </ul>
+
+        {!isFiltered && filteredMotifs.length > 5 && (
+          <button
+            type="button"
+            className="share-btn crud-more-btn"
+            onClick={() => setShowAll((prev) => !prev)}
+          >
+            {showAll ? 'Tampilkan lebih ringkas' : `Lihat semua (${filteredMotifs.length} motif)`}
+          </button>
+        )}
       </section>
     </div>
   )

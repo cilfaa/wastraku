@@ -220,7 +220,11 @@
 .crud-msg.ok { color: #166534; }
 .crud-msg.error { color: #b91c1c; }
 
-.crud-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; max-height: 420px; overflow-y: auto; }
+.crud-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+.crud-upload-box { display: grid; gap: 10px; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--card); }
+.crud-preview-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.crud-preview { width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.crud-more-btn { margin-top: 12px; width: 100%; justify-content: center; }
 .crud-item {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line);
