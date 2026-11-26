@@ -26,6 +26,9 @@ alter table motifs add column if not exists history text not null default '';
 alter table motifs add column if not exists symbolism text not null default '';
 alter table motifs add column if not exists image_url text;
 
+alter table regions disable row level security;
+alter table motifs disable row level security;
+
 truncate table motifs, regions restart identity cascade;
 
 -- 38 Provinsi Indonesia
