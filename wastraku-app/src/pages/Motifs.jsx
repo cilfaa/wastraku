@@ -8,6 +8,7 @@ import useFetch from '../useFetch.js'
 import useQueryFilter from '../useQueryFilter.js'
 import { getMotifs, getRegions } from '../api.js'
 import MotifCard from '../components/MotifCard.jsx'
+import SearchInput from '../components/SearchInput.jsx'
 import State from '../components/State.jsx'
 
 // Pilihan tombol kategori
@@ -66,15 +67,27 @@ export default function Motifs() {
       <h1>Katalog Motif Batik</h1>
       <p className="muted">Cari berdasarkan nama motif, provinsi, kota asal, filosofi, atau acara adat.</p>
 
-      <div className="filter-bar">
-        {/* Kolom pencarian: setiap ketikan langsung memperbarui URL & hasil */}
-        <input
-          className="search"
-          type="search"
+      <div className="filter-bar filter-bar-3">
+        {/* Kolom pencarian dengan ikon search */}
+        <SearchInput
           placeholder="Cari motif, provinsi, filosofi, atau acara…"
           value={q}
           onChange={(e) => updateParam('q', e.target.value, '')}
         />
+
+        {/* Dropdown filter kategori */}
+        <select
+          className="province-select"
+          value={category}
+          onChange={(e) => updateParam('kategori', e.target.value, 'Semua')}
+          aria-label="Filter kategori batik"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c === 'Semua' ? 'Semua Kategori' : `Kategori: ${c}`}
+            </option>
+          ))}
+        </select>
 
         {/* Dropdown filter provinsi */}
         <select
@@ -90,20 +103,6 @@ export default function Motifs() {
             </option>
           ))}
         </select>
-      </div>
-
-      {/* Tombol filter kategori. Yang aktif diberi class "on" */}
-      <div className="chips" role="group" aria-label="Filter kategori batik">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={'chip' + (category === c ? ' on' : '')}
-            onClick={() => updateParam('kategori', c, 'Semua')}
-          >
-            {c}
-          </button>
-        ))}
       </div>
 
       {/* Keterangan jumlah hasil */}

@@ -8,6 +8,7 @@ import useFetch from '../useFetch.js'
 import useQueryFilter from '../useQueryFilter.js'
 import { getMotifs, getRegions } from '../api.js'
 import RegionCard from '../components/RegionCard.jsx'
+import SearchInput from '../components/SearchInput.jsx'
 import State from '../components/State.jsx'
 
 // Pengelompokan provinsi per pulau/wilayah untuk tombol filter.
@@ -102,27 +103,26 @@ export default function Regions() {
       <h1>38 Provinsi Batik Nusantara</h1>
       <p className="muted">Eksplorasi kekhasan corak dan warna batik dari Sabang sampai Merauke.</p>
 
-      {/* Kolom pencarian provinsi */}
-      <input
-        className="search"
-        type="search"
-        placeholder="Cari nama provinsi, kota, atau ciri khas batik…"
-        value={q}
-        onChange={(e) => updateParam('q', e.target.value, '')}
-      />
+      {/* Pencarian & dropdown filter wilayah */}
+      <div className="filter-bar">
+        <SearchInput
+          placeholder="Cari nama provinsi, kota, atau ciri khas batik…"
+          value={q}
+          onChange={(e) => updateParam('q', e.target.value, '')}
+        />
 
-      {/* Tombol filter wilayah */}
-      <div className="chips" role="group" aria-label="Filter wilayah Indonesia">
-        {ISLAND_GROUPS.map((g) => (
-          <button
-            key={g.label}
-            type="button"
-            className={'chip' + (island === g.label ? ' on' : '')}
-            onClick={() => updateParam('wilayah', g.label, 'Semua')}
-          >
-            {g.label}
-          </button>
-        ))}
+        <select
+          className="province-select"
+          value={island}
+          onChange={(e) => updateParam('wilayah', e.target.value, 'Semua')}
+          aria-label="Filter wilayah Indonesia"
+        >
+          {ISLAND_GROUPS.map((g) => (
+            <option key={g.label} value={g.label}>
+              {g.label === 'Semua' ? 'Semua Wilayah' : g.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Jumlah provinsi yang tampil */}

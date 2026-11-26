@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import useFetch from '../useFetch.js'
 import { createMotif, deleteMotif, getMotifs, getRegions, updateMotif } from '../api.js'
+import SearchInput from '../components/SearchInput.jsx'
 
 // Data diri pembuat
 const PROFILE = {
@@ -305,9 +306,7 @@ export default function About() {
         <div className="list-head" style={{ marginTop: 0 }}>
           <h2>Daftar Data Motif ({motifs.length})</h2>
         </div>
-        <input
-          className="search"
-          type="search"
+        <SearchInput
           placeholder="Cari motif untuk diedit atau dihapus..."
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}

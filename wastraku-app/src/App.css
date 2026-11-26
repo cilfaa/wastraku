@@ -73,11 +73,15 @@
 .cat-nusantara { color: #2f4f3e; border-color: #cfe0d6; background: #f3f8f5; }
 
 /* Search & Filters */
-.filter-bar { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
+.filter-bar { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 14px 0 8px; }
 @media (min-width: 640px) {
   .filter-bar { grid-template-columns: 1.5fr 1fr; }
+  .filter-bar-3 { grid-template-columns: 1.5fr 1fr 1fr; }
 }
+.search-wrap { position: relative; width: 100%; }
+.search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); display: flex; pointer-events: none; }
 .search, .province-select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 0.95rem; font-family: var(--font-sans); transition: border-color 0.15s, box-shadow 0.15s; }
+.search-with-icon { padding-left: 40px; }
 .search:hover, .province-select:hover { border-color: #c7bfb3; }
 .search:focus, .province-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1); outline: none; }
 
