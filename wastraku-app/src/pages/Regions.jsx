@@ -83,7 +83,7 @@ export default function Regions() {
   const q = getParam('q', '')                 // kata kunci pencarian
 
   useEffect(() => {
-    document.title = '38 Provinsi Batik · WastraKu'
+    document.title = 'Provinsi Batik · WastraKu'
   }, [])
 
   const group = ISLAND_GROUPS.find((g) => g.label === island) || ISLAND_GROUPS[0]
@@ -100,7 +100,7 @@ export default function Regions() {
 
   return (
     <div className="page">
-      <h1>38 Provinsi Batik Nusantara</h1>
+      <h1>Provinsi Batik Nusantara</h1>
       <p className="muted">Eksplorasi kekhasan corak dan warna batik dari Sabang sampai Merauke.</p>
 
       {/* Pencarian & dropdown filter wilayah */}

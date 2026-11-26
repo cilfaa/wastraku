@@ -26,26 +26,13 @@ export default function Home() {
       <section className="masthead">
         <p className="masthead-eyebrow">WastraKu · Batik Nusantara</p>
         <h1>Selamat Datang</h1>
-        <p>Jelajahi ragam motif batik dari 38 provinsi Indonesia, lengkap dengan filosofi dan sejarah budayanya.</p>
-      </section>
-
-      {/* Dua kotak angka: jumlah motif dan jumlah provinsi (klik untuk membuka daftarnya) */}
-      <section className="stats">
-        <Link to="/motifs" className="stat">
-          {/* Tanda "–" tampil selagi data belum selesai dimuat */}
-          <strong>{motifs.data ? motifs.data.length : '–'}</strong>
-          <span>Motif Batik</span>
-        </Link>
-        <Link to="/regions" className="stat">
-          <strong>{regions.data ? regions.data.length : '–'}</strong>
-          <span>Provinsi Indonesia</span>
-        </Link>
+        <p>Jelajahi ragam motif batik dari seluruh provinsi Indonesia, lengkap dengan filosofi dan sejarah budayanya.</p>
       </section>
 
       {/* Pilihan provinsi (6 provinsi contoh) */}
       <div className="list-head">
         <h2>Jelajahi per Provinsi</h2>
-        <Link to="/regions">Lihat 38 provinsi ›</Link>
+        <Link to="/regions">Lihat semua ›</Link>
       </div>
       <State loading={regions.loading} error={regions.error} onRetry={regions.retry} count={3} />
       <ul className="list">

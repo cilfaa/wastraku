@@ -96,7 +96,7 @@ export default function Motifs() {
           onChange={(e) => updateParam('provinsi', e.target.value, 'Semua')}
           aria-label="Filter berdasarkan provinsi"
         >
-          <option value="Semua">Semua Provinsi ({provinces.length || 38})</option>
+          <option value="Semua">Semua Provinsi</option>
           {provinces.map((p) => (
             <option key={p} value={p}>
               {p}

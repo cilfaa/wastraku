@@ -185,7 +185,7 @@ export default function About() {
         <h2>Tentang WastraKu</h2>
         <p>
           <strong>WastraKu</strong> adalah ensiklopedia digital Batik Nusantara berbasis Progressive Web App (PWA) yang
-          menghimpun motif batik autentik dari 38 provinsi di Indonesia, lengkap dengan makna filosofis, sejarah budaya,
+          menghimpun motif batik autentik dari seluruh provinsi di Indonesia, lengkap dengan makna filosofis, sejarah budaya,
           simbolisme, dan penggunaan adatnya.
         </p>
         <p className="muted" style={{ marginTop: 10 }}>
