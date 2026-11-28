@@ -1,28 +1,34 @@
 // ============================================================
 // Motifs.jsx — halaman daftar Motif Batik (LIST #1)
-// Fitur: pencarian, filter provinsi, filter kategori.
-// Klik kartu motif -> membuka halaman detail (MotifDetail.jsx).
+// Fitur: pencarian, filter provinsi, filter kategori, dan PAGINATION
+// (memuat 9 motif per halaman langsung dari API agar ringan & cepat).
 // ============================================================
 import { useEffect } from 'react'
 import useFetch from '../useFetch.js'
 import useQueryFilter from '../useQueryFilter.js'
-import { getMotifs, getRegions } from '../api.js'
+import { getMotifsPage, getRegions } from '../api.js'
 import MotifCard from '../components/MotifCard.jsx'
+import Pagination from '../components/Pagination.jsx'
 import SearchInput from '../components/SearchInput.jsx'
 import State from '../components/State.jsx'
 
-// Pilihan tombol kategori
 const CATEGORIES = ['Semua', 'Keraton', 'Pesisir', 'Pedalaman', 'Nusantara']
+const PAGE_LIMIT = 9
 
 export default function Motifs() {
-  const { data, loading, error, retry } = useFetch(getMotifs, '/api/motifs')
   const regionsRes = useFetch(getRegions, '/api/regions')
-  // Filter disimpan di URL (lihat useQueryFilter.js)
-  const { getParam, setParam: updateParam, resetParams: resetFilter } = useQueryFilter()
+  const { getParam, setParam, resetParams: resetFilter } = useQueryFilter()
 
   const category = getParam('kategori', 'Semua')
   const province = getParam('provinsi', 'Semua')
-  const q = getParam('q', '') // kata kunci pencarian
+  const q = getParam('q', '')
+  const page = Math.max(1, Number.parseInt(getParam('hal', '1'), 10) || 1)
+
+  const pathKey = `/api/motifs?page=${page}&limit=${PAGE_LIMIT}&q=${encodeURIComponent(q)}&category=${encodeURIComponent(category)}&province=${encodeURIComponent(province)}`
+  const { data, loading, error, retry } = useFetch(
+    (opts) => getMotifsPage({ page, limit: PAGE_LIMIT, q, category, province }, opts),
+    pathKey,
+  )
 
   useEffect(() => {
     document.title = 'Katalog Motif Batik · WastraKu'
@@ -33,34 +39,14 @@ export default function Motifs() {
     new Set((regionsRes.data || []).map((r) => r.province).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b))
 
-  const query = q.trim().toLowerCase()
+  const items = data?.items || []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 1
 
-  // Menyaring motif sesuai kategori, provinsi, dan kata kunci
-  const shown = (data || []).filter((m) => {
-    const matchCat = category === 'Semua' || m.category === category
-    const matchProv = province === 'Semua' || m.regions?.province === province
-    if (!matchCat || !matchProv) return false
-    if (!query) return true
-
-    // Pencarian: semua teks motif digabung jadi satu, lalu dicek apakah mengandung kata kunci
-    // (nama, kategori, acara adat, filosofi, sejarah, simbolisme, deskripsi, kota, provinsi)
-    const haystack = [
-      m.name,
-      m.category,
-      m.occasion,
-      m.philosophy,
-      m.history,
-      m.symbolism,
-      m.description,
-      m.regions?.name,
-      m.regions?.province,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-
-    return haystack.includes(query)
-  })
+  const handleFilterChange = (key, val, defaultVal) => {
+    setParam(key, val, defaultVal)
+    if (key !== 'hal' && page !== 1) setParam('hal', '1', '1')
+  }
 
   return (
     <div className="page">
@@ -68,18 +54,16 @@ export default function Motifs() {
       <p className="muted">Cari berdasarkan nama motif, provinsi, kota asal, filosofi, atau acara adat.</p>
 
       <div className="filter-bar filter-bar-3">
-        {/* Kolom pencarian dengan ikon search */}
         <SearchInput
-          placeholder="Cari motif, provinsi, filosofi, atau acara…"
+          placeholder="Cari motif, filosofi, atau acara…"
           value={q}
-          onChange={(e) => updateParam('q', e.target.value, '')}
+          onChange={(e) => handleFilterChange('q', e.target.value, '')}
         />
 
-        {/* Dropdown filter kategori */}
         <select
           className="province-select"
           value={category}
-          onChange={(e) => updateParam('kategori', e.target.value, 'Semua')}
+          onChange={(e) => handleFilterChange('kategori', e.target.value, 'Semua')}
           aria-label="Filter kategori batik"
         >
           {CATEGORIES.map((c) => (
@@ -89,11 +73,10 @@ export default function Motifs() {
           ))}
         </select>
 
-        {/* Dropdown filter provinsi */}
         <select
           className="province-select"
           value={province}
-          onChange={(e) => updateParam('provinsi', e.target.value, 'Semua')}
+          onChange={(e) => handleFilterChange('provinsi', e.target.value, 'Semua')}
           aria-label="Filter berdasarkan provinsi"
         >
           <option value="Semua">Semua Provinsi</option>
@@ -105,21 +88,18 @@ export default function Motifs() {
         </select>
       </div>
 
-      {/* Keterangan jumlah hasil */}
       {data && (
         <div className="toolbar">
           <span className="count-label">
-            Menampilkan {shown.length} motif batik
-            {province !== 'Semua' ? ` dari ${province}` : ''}
+            Menampilkan {items.length} dari {total} motif batik
+            {province !== 'Semua' ? ` (${province})` : ''}
           </span>
         </div>
       )}
 
-      {/* Tampil saat loading / error */}
       <State loading={loading} error={error} onRetry={retry} count={6} />
 
-      {/* Tampil kalau tidak ada hasil yang cocok */}
-      {data && shown.length === 0 && (
+      {data && items.length === 0 && (
         <div className="state empty-box">
           <p>Tidak ada motif batik yang cocok dengan filter atau pencarianmu.</p>
           <button type="button" className="chip on" onClick={resetFilter}>
@@ -128,12 +108,17 @@ export default function Motifs() {
         </div>
       )}
 
-      {/* Daftar kartu motif hasil saringan */}
       <ul className="list">
-        {shown.map((m) => (
+        {items.map((m) => (
           <MotifCard key={m.id} motif={m} />
         ))}
       </ul>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(next) => setParam('hal', String(next), '1')}
+      />
     </div>
   )
 }

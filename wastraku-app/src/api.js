@@ -116,6 +116,22 @@ export const getMotif = (id, opts) => request(`/api/motifs/${id}`, opts)  // sat
 export const getRegions = (opts) => request('/api/regions', opts)         // semua provinsi
 export const getRegion = (id, opts) => request(`/api/regions/${id}`, opts) // satu provinsi
 
+// Baca data dengan pagination (?page=1&limit=9) + filter langsung di API
+export const getMotifsPage = ({ page = 1, limit = 9, q = '', category = 'Semua', province = 'Semua' } = {}, opts) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  if (q.trim()) params.set('q', q.trim())
+  if (category && category !== 'Semua') params.set('category', category)
+  if (province && province !== 'Semua') params.set('province', province)
+  return request(`/api/motifs?${params.toString()}`, opts)
+}
+
+export const getRegionsPage = ({ page = 1, limit = 12, q = '', provinces = [] } = {}, opts) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  if (q.trim()) params.set('q', q.trim())
+  if (provinces && provinces.length > 0) params.set('provinces', provinces.join(','))
+  return request(`/api/regions?${params.toString()}`, opts)
+}
+
 // Hapus cache motif. Dipanggil setelah tambah/ubah/hapus supaya data tidak basi.
 function clearMotifCache() {
   for (const key of Array.from(cache.keys())) {
@@ -151,7 +167,8 @@ async function mutate(path, method, body) {
   return res.json()
 }
 
-// ---------- Fungsi CRUD motif (dipakai halaman Profil) ----------
-export const createMotif = (payload) => mutate('/api/motifs', 'POST', payload)        // Create
+// ---------- Fungsi CRUD motif & upload foto (dipakai halaman Profil) ----------
+export const uploadMotifImage = (image) => mutate('/api/motifs/upload', 'POST', { image }) // Supabase Storage
+export const createMotif = (payload) => mutate('/api/motifs', 'POST', payload)            // Create
 export const updateMotif = (id, payload) => mutate(`/api/motifs/${id}`, 'PUT', payload) // Update
 export const deleteMotif = (id) => mutate(`/api/motifs/${id}`, 'DELETE')                // Delete

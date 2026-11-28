@@ -40,11 +40,19 @@ const WATERMARKED_WIKIMEDIA_FILE = 'Detail_batik_motif_sekar_jagad_warna_merah_k
 const CLEAN_SEKAR_JAGAD_URL =
   'https://commons.wikimedia.org/wiki/Special:FilePath/Kain_batik_motif_sekar_jagad.jpg?width=800'
 
+// Perkecil ukuran gambar pada kartu daftar (thumbnail kecil) agar loading jauh lebih ringan
+function toThumbUrl(url, size) {
+  if (!url) return url
+  if (size === 'lg') return url
+  return url.replace(/\?width=\d+/i, '?width=320').replace(/\/\d+px-/g, '/330px-')
+}
+
 // Foto motif batik
 export function MotifThumb({ motif, size = 'card' }) {
   const [imgError, setImgError] = useState(false) // true kalau foto gagal dimuat
   const rawSrc = motif?.image_url
-  const src = rawSrc?.includes(WATERMARKED_WIKIMEDIA_FILE) ? CLEAN_SEKAR_JAGAD_URL : rawSrc
+  const cleanSrc = rawSrc?.includes(WATERMARKED_WIKIMEDIA_FILE) ? CLEAN_SEKAR_JAGAD_URL : rawSrc
+  const src = toThumbUrl(cleanSrc, size)
 
   return (
     <div className={`thumb-box thumb-${size}`}>
@@ -70,7 +78,7 @@ export function RegionThumb({ region, imageUrl, size = 'sm' }) {
   // Cari foto landmark berdasarkan nama provinsi di data/provinceLandmarks.js
   const landmark = PROVINCE_LANDMARKS[region?.province]
   // Prioritas: foto landmark, kalau tidak ada pakai foto batik (imageUrl)
-  const src = landmark?.url || imageUrl
+  const src = toThumbUrl(landmark?.url || imageUrl, size)
   // Teks alternatif untuk pembaca layar / saat gambar tidak tampil
   const altText = landmark?.label
     ? `${landmark.label}, ${region?.province}`

@@ -1,18 +1,17 @@
 // ============================================================
-// Regions.jsx — halaman daftar 38 Provinsi (LIST #2)
-// Fitur: pencarian dan filter wilayah (pulau).
-// Klik kartu provinsi -> membuka halaman detail (RegionDetail.jsx).
+// Regions.jsx — halaman daftar Provinsi (LIST #2)
+// Fitur: pencarian, filter wilayah (pulau), dan PAGINATION
+// (memuat 12 provinsi per halaman agar gambar landmark ringan).
 // ============================================================
 import { useEffect } from 'react'
 import useFetch from '../useFetch.js'
 import useQueryFilter from '../useQueryFilter.js'
-import { getMotifs, getRegions } from '../api.js'
+import { getRegionsPage } from '../api.js'
+import Pagination from '../components/Pagination.jsx'
 import RegionCard from '../components/RegionCard.jsx'
 import SearchInput from '../components/SearchInput.jsx'
 import State from '../components/State.jsx'
 
-// Pengelompokan provinsi per pulau/wilayah untuk tombol filter.
-// match: null = tampilkan semua; selain itu = daftar provinsi di wilayah tsb.
 const ISLAND_GROUPS = [
   { label: 'Semua', match: null },
   {
@@ -65,56 +64,53 @@ const ISLAND_GROUPS = [
   },
 ]
 
+const PAGE_LIMIT = 12
+
 export default function Regions() {
-  const { data, loading, error, retry } = useFetch(getRegions, '/api/regions')
-  const motifsRes = useFetch(getMotifs, '/api/motifs')
-  const { getParam, setParam: updateParam, resetParams: resetFilter } = useQueryFilter()
+  const { getParam, setParam, resetParams: resetFilter } = useQueryFilter()
 
-  // Foto cadangan per provinsi: dipakai kalau provinsi tidak punya foto landmark.
-  // Diambil dari foto motif pertama milik provinsi tersebut.
-  const regionImages = new Map()
-  ;(motifsRes.data || []).forEach((m) => {
-    if (m.region_id && m.image_url && !regionImages.has(m.region_id)) {
-      regionImages.set(m.region_id, m.image_url)
-    }
-  })
+  const island = getParam('wilayah', 'Semua')
+  const q = getParam('q', '')
+  const page = Math.max(1, Number.parseInt(getParam('hal', '1'), 10) || 1)
 
-  const island = getParam('wilayah', 'Semua') // wilayah yang dipilih
-  const q = getParam('q', '')                 // kata kunci pencarian
+  const group = ISLAND_GROUPS.find((g) => g.label === island) || ISLAND_GROUPS[0]
+  const provinces = group.match || []
+
+  const pathKey = `/api/regions?page=${page}&limit=${PAGE_LIMIT}&q=${encodeURIComponent(q)}&wilayah=${encodeURIComponent(island)}`
+  const { data, loading, error, retry } = useFetch(
+    (opts) => getRegionsPage({ page, limit: PAGE_LIMIT, q, provinces }, opts),
+    pathKey,
+  )
 
   useEffect(() => {
     document.title = 'Provinsi Batik · WastraKu'
   }, [])
 
-  const group = ISLAND_GROUPS.find((g) => g.label === island) || ISLAND_GROUPS[0]
-  const query = q.trim().toLowerCase()
+  const items = data?.items || []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 1
 
-  // Menyaring provinsi sesuai wilayah dan kata kunci
-  const shown = (data || []).filter((r) => {
-    const matchIsland = !group.match || group.match.includes(r.province)
-    const matchQuery =
-      !query ||
-      [r.province, r.name, r.characteristic, r.description].filter(Boolean).join(' ').toLowerCase().includes(query)
-    return matchIsland && matchQuery
-  })
+  const handleFilterChange = (key, val, defaultVal) => {
+    setParam(key, val, defaultVal)
+    if (key !== 'hal' && page !== 1) setParam('hal', '1', '1')
+  }
 
   return (
     <div className="page">
       <h1>Provinsi Batik Nusantara</h1>
       <p className="muted">Eksplorasi kekhasan corak dan warna batik dari Sabang sampai Merauke.</p>
 
-      {/* Pencarian & dropdown filter wilayah */}
       <div className="filter-bar">
         <SearchInput
           placeholder="Cari nama provinsi, kota, atau ciri khas batik…"
           value={q}
-          onChange={(e) => updateParam('q', e.target.value, '')}
+          onChange={(e) => handleFilterChange('q', e.target.value, '')}
         />
 
         <select
           className="province-select"
           value={island}
-          onChange={(e) => updateParam('wilayah', e.target.value, 'Semua')}
+          onChange={(e) => handleFilterChange('wilayah', e.target.value, 'Semua')}
           aria-label="Filter wilayah Indonesia"
         >
           {ISLAND_GROUPS.map((g) => (
@@ -125,17 +121,17 @@ export default function Regions() {
         </select>
       </div>
 
-      {/* Jumlah provinsi yang tampil */}
       {data && (
         <div className="toolbar">
-          <span className="count-label">{shown.length} provinsi</span>
+          <span className="count-label">
+            Menampilkan {items.length} dari {total} provinsi
+          </span>
         </div>
       )}
 
       <State loading={loading} error={error} onRetry={retry} count={6} />
 
-      {/* Pesan kalau tidak ada hasil */}
-      {data && shown.length === 0 && (
+      {data && items.length === 0 && (
         <div className="state empty-box">
           <p>Tidak ada provinsi yang cocok dengan pencarianmu.</p>
           <button type="button" className="chip on" onClick={resetFilter}>
@@ -144,12 +140,17 @@ export default function Regions() {
         </div>
       )}
 
-      {/* Daftar kartu provinsi */}
       <ul className="list">
-        {shown.map((r) => (
-          <RegionCard key={r.id} region={r} imageUrl={regionImages.get(r.id)} />
+        {items.map((r) => (
+          <RegionCard key={r.id} region={r} />
         ))}
       </ul>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(next) => setParam('hal', String(next), '1')}
+      />
     </div>
   )
 }

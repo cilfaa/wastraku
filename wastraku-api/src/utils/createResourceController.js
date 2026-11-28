@@ -12,10 +12,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // notFoundMessage = pesan kalau data yang dicari tidak ada
 export function createResourceController(model, notFoundMessage) {
   return {
-    // READ (semua): ambil seluruh data
-    async getAll(_req, res) {
+    // READ (semua): ambil seluruh data (mendukung query pagination & filter)
+    async getAll(req, res) {
       try {
-        const data = await model.getAll()
+        const data = await model.getAll(req.query)
         // no-cache: pastikan perubahan CRUD (tambah/edit/hapus) langsung terlihat
         res.set('Cache-Control', 'no-cache')
         res.json(data)

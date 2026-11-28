@@ -6,7 +6,7 @@
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
 import useFetch from '../useFetch.js'
-import { createMotif, deleteMotif, getMotifs, getRegions, updateMotif } from '../api.js'
+import { createMotif, deleteMotif, getMotifs, getRegions, updateMotif, uploadMotifImage } from '../api.js'
 import SearchInput from '../components/SearchInput.jsx'
 
 // Data diri pembuat
@@ -31,9 +31,8 @@ const EMPTY_FORM = {
   image_url: '',
 }
 
-// Memperkecil & mengubah file gambar menjadi teks Data URL (base64)
-// agar langsung bisa disimpan ke database dan ditampilkan tanpa link luar.
-function compressImageToDataUrl(file, maxWidth = 800, quality = 0.8) {
+// Memperkecil & mengubah gambar menjadi WebP ringan sebelum diupload ke Supabase Storage
+function compressImageToDataUrl(file, maxWidth = 600, quality = 0.72) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onerror = () => reject(new Error('Gagal membaca file gambar.'))
@@ -50,7 +49,8 @@ function compressImageToDataUrl(file, maxWidth = 800, quality = 0.8) {
         canvas.height = height
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0, width, height)
-        resolve(canvas.toDataURL('image/jpeg', quality))
+        const webp = canvas.toDataURL('image/webp', quality)
+        resolve(webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', quality))
       }
       img.src = reader.result
     }
@@ -142,17 +142,25 @@ export default function About() {
     setSubmitting(true)
     setFeedback({ type: '', text: '' })
 
-    const payload = {
-      name: form.name.trim(),
-      region_id: form.region_id || null,
-      category: form.category,
-      occasion: form.occasion.trim() || 'Acara Resmi',
-      philosophy: form.philosophy.trim(),
-      description: form.description.trim(),
-      image_url: form.image_url.trim() || null,
-    }
-
     try {
+      let imageUrl = form.image_url.trim() || null
+      // Jika gambar baru dipilih (berupa data URI), upload dulu ke Supabase Storage
+      // supaya yang tersimpan di database hanya URL publik pendek (bukan Base64).
+      if (imageUrl && imageUrl.startsWith('data:image/')) {
+        const uploaded = await uploadMotifImage(imageUrl)
+        imageUrl = uploaded.url
+      }
+
+      const payload = {
+        name: form.name.trim(),
+        region_id: form.region_id || null,
+        category: form.category,
+        occasion: form.occasion.trim() || 'Acara Resmi',
+        philosophy: form.philosophy.trim(),
+        description: form.description.trim(),
+        image_url: imageUrl,
+      }
+
       if (editingId) {
         await updateMotif(editingId, payload)
         setFeedback({ type: 'ok', text: `Motif "${payload.name}" berhasil diperbarui.` })

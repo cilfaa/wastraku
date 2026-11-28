@@ -225,6 +225,11 @@
 .crud-preview-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .crud-preview { width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
 .crud-more-btn { margin-top: 12px; width: 100%; justify-content: center; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+.pagination-info { font-size: 0.88rem; color: var(--muted); font-weight: 500; }
+.share-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .crud-item {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line);
